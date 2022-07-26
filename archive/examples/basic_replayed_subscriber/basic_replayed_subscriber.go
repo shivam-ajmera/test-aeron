@@ -18,6 +18,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math"
+	"time"
+
 	"github.com/corymonroe-coinbase/aeron-go/aeron"
 	"github.com/corymonroe-coinbase/aeron-go/aeron/atomic"
 	"github.com/corymonroe-coinbase/aeron-go/aeron/idlestrategy"
@@ -25,11 +28,10 @@ import (
 	"github.com/corymonroe-coinbase/aeron-go/aeron/logging"
 	"github.com/corymonroe-coinbase/aeron-go/archive"
 	"github.com/corymonroe-coinbase/aeron-go/archive/examples"
-	"math"
-	"time"
 )
 
 var logID = "basic_recording_subscriber"
+
 var logger = logging.MustGetLogger(logID)
 
 func main() {
@@ -96,8 +98,9 @@ func main() {
 
 	counter := 0
 	printHandler := func(buffer *atomic.Buffer, offset int32, length int32, header *logbuffer.Header) {
-		bytes := buffer.GetBytesArray(offset, length)
-		logger.Noticef("%s\n", bytes)
+		msgNo := buffer.GetInt32(offset)
+		sendTime := buffer.GetInt64(offset + 4)
+		fmt.Printf("msgNo:%d  sendTime: %d\n", msgNo, sendTime)
 		counter++
 	}
 
