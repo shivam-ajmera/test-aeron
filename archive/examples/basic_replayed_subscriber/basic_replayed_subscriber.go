@@ -31,7 +31,6 @@ import (
 )
 
 var logID = "basic_recording_subscriber"
-
 var logger = logging.MustGetLogger(logID)
 
 func main() {
