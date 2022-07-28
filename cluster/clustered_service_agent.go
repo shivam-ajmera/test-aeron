@@ -362,6 +362,8 @@ type activeLogEvent struct {
 
 func (agent *ClusteredServiceAgent) joinActiveLog(event *activeLogEvent) {
 	logSub := <-agent.aeronClient.AddSubscription(event.logChannel, event.logStreamId)
+	fmt.Println(event.logChannel)
+	fmt.Println(event.logStreamId)
 	img := agent.awaitImage(event.logSessionId, logSub)
 	if img.Position() != agent.logPosition {
 		panic(fmt.Errorf("joinActiveLog - image.position=%v expected=%v", img.Position(), agent.logPosition))
@@ -431,6 +433,7 @@ func (agent *ClusteredServiceAgent) onSessionOpen(
 		logger.Errorf("clashing open session - id=%d leaderTermId=%d logPos=%d",
 			clusterSessionId, leadershipTermId, logPosition)
 	} else {
+		fmt.Printf("responseChannel: %s responseStreamID: %d\n", responseChannel, responseStreamId)
 		session := newContainerClientSession(
 			clusterSessionId,
 			responseStreamId,

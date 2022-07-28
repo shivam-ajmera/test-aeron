@@ -17,10 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/corymonroe-coinbase/aeron-go/aeron"
@@ -39,32 +37,46 @@ func main() {
 	if !*examples.ExamplesConfig.LoggingOn {
 		logging.SetLevel(logging.INFO, "aeron")
 		logging.SetLevel(logging.INFO, "memmap")
-		logging.SetLevel(logging.DEBUG, "driver")
+		logging.SetLevel(logging.INFO, "driver")
 		logging.SetLevel(logging.INFO, "counters")
 		logging.SetLevel(logging.INFO, "logbuffers")
 		logging.SetLevel(logging.INFO, "buffer")
 	}
+	// files, err := ioutil.ReadFile("/tmp/aeron-go-poc/cluster/recording.log")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	to := time.Duration(time.Millisecond.Nanoseconds() * *examples.ExamplesConfig.DriverTo)
-	ctx := aeron.NewContext().AeronDir(*examples.ExamplesConfig.AeronPrefix).MediaDriverTimeout(to)
+	// fmt.Println(string(files))
+
+	to := time.Duration(time.Millisecond.Nanoseconds() * 10000)
+	ctx := aeron.NewContext().AeronDir(aeron.DefaultAeronDir + "/aeron-" + aeron.UserName).MediaDriverTimeout(to)
 
 	a, err := aeron.Connect(ctx)
 	if err != nil {
-		logger.Fatalf("Failed to connect to media driver: %s\n", err.Error())
+		fmt.Printf("Failed to connect to media driver: %s\n", err.Error())
 	}
 	defer a.Close()
 
-	subscription := <-a.AddSubscription(*examples.ExamplesConfig.Channel, int32(*examples.ExamplesConfig.StreamID))
+	subscription := <-a.AddSubscription("aeron-spy:aeron:udp?tags=32|session-id=-826749489|alias=log", int32(100))
 	defer subscription.Close()
-	log.Printf("Subscription found %v", subscription)
+	fmt.Printf("Subscription found %v", subscription)
 
-	tmpBuf := &bytes.Buffer{}
+	// tmpBuf := &bytes.Buffer{}
 	counter := 1
 	handler := func(buffer *atomic.Buffer, offset int32, length int32, header *logbuffer.Header) {
-		bytes := buffer.GetBytesArray(offset, length)
-		tmpBuf.Reset()
-		buffer.WriteBytes(tmpBuf, offset, length)
-		fmt.Printf("%8.d: Gots me a fragment offset:%d length: %d payload: %s (buf:%s)\n", counter, offset, length, string(bytes), string(tmpBuf.Next(int(length))))
+		offset += 32
+		// bytes := buffer.GetBytesArray(offset, length)
+
+		msgNo := buffer.GetInt32(offset)
+		sendTime := buffer.GetInt64(offset + 4)
+		fmt.Printf("msg:%d sendTime:%d\n", msgNo, sendTime)
+
+		// tmpBuf.Reset()
+		// buffer.WriteBytes(tmpBuf, offset+32, length)
+		// fmt.Printf("%8.d: Gots me a fragment offset:%d length: %d payload: %s (buf:%s)\n", counter, offset, length, string(bytes), string(tmpBuf.Next(int(length))))
+		// fmt.Println(bytes)
+		// fmt.Println(header.FrameLength(), header.Offset())
 
 		counter++
 	}
@@ -72,7 +84,7 @@ func main() {
 	idleStrategy := idlestrategy.Sleeping{SleepFor: time.Millisecond}
 
 	for {
-		fragmentsRead := subscription.Poll(handler, 10)
+		fragmentsRead := subscription.Poll(handler, 10000)
 		idleStrategy.Idle(fragmentsRead)
 	}
 }

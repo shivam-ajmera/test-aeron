@@ -10,8 +10,6 @@ import (
 	"github.com/corymonroe-coinbase/aeron-go/aeron/atomic"
 	"github.com/corymonroe-coinbase/aeron-go/aeron/idlestrategy"
 	"github.com/corymonroe-coinbase/aeron-go/aeron/logbuffer"
-	"github.com/corymonroe-coinbase/aeron-go/archive"
-	"github.com/corymonroe-coinbase/aeron-go/archive/examples"
 	"github.com/corymonroe-coinbase/aeron-go/cluster/client"
 )
 
@@ -20,8 +18,6 @@ type TestContext struct {
 	messageCount          int
 	latencies             []int64
 	nextSendKeepAliveTime int64
-	arch                  *archive.Archive
-	archPub               *aeron.Publication
 }
 
 func (ctx *TestContext) OnConnect(ac *client.AeronCluster) {
@@ -48,7 +44,7 @@ func (ctx *TestContext) OnMessage(cluster *client.AeronCluster, timestamp int64,
 	} else {
 		ctx.latencies[msgNo-1] = latency
 		ctx.messageCount++
-		WriteToArchive(ctx, buffer, offset, length, ctx.messageCount)
+		// WriteToArchive(ctx, buffer, offset, length, ctx.messageCount)
 	}
 }
 
@@ -67,32 +63,32 @@ func (ctx *TestContext) sendKeepAliveIfNecessary() {
 	}
 }
 
-func WriteToArchive(
-	ctx *TestContext,
-	buffer *atomic.Buffer,
-	offset int32,
-	length int32,
-	offerCnt int) {
+// func WriteToArchive(
+// 	ctx *TestContext,
+// 	buffer *atomic.Buffer,
+// 	offset int32,
+// 	length int32,
+// 	offerCnt int) {
 
-	ret := ctx.archPub.Offer(buffer, offset, length, nil)
+// 	ret := ctx.archPub.Offer(buffer, offset, length, nil)
 
-	switch ret {
-	case aeron.NotConnected:
-		fmt.Printf("%d, Not connected (yet)", offerCnt)
+// 	switch ret {
+// 	case aeron.NotConnected:
+// 		fmt.Printf("%d, Not connected (yet)", offerCnt)
 
-	case aeron.BackPressured:
-		fmt.Printf("%d: back pressured", offerCnt)
-	default:
-		if ret < 0 {
-			fmt.Printf("%d: Unrecognized code: %d", offerCnt, ret)
-		} else {
-			fmt.Printf("%d: success!", offerCnt)
-		}
-	}
-	if !ctx.archPub.IsConnected() {
-		fmt.Println("no subscribers detected")
-	}
-}
+// 	case aeron.BackPressured:
+// 		fmt.Printf("%d: back pressured", offerCnt)
+// 	default:
+// 		if ret < 0 {
+// 			fmt.Printf("%d: Unrecognized code: %d", offerCnt, ret)
+// 		} else {
+// 			fmt.Printf("%d: success!", offerCnt)
+// 		}
+// 	}
+// 	if !ctx.archPub.IsConnected() {
+// 		fmt.Println("no subscribers detected")
+// 	}
+// }
 
 func main() {
 	ctx := aeron.NewContext()
@@ -125,35 +121,35 @@ func main() {
 		opts.IdleStrategy.Idle(clusterClient.Poll())
 	}
 
-	options := archive.DefaultOptions()
-	options.RequestChannel = *examples.Config.RequestChannel
-	options.RequestStream = int32(*examples.Config.RequestStream)
-	options.ResponseChannel = *examples.Config.ResponseChannel
-	options.ResponseStream = int32(*examples.Config.ResponseStream)
+	// options := archive.DefaultOptions()
+	// options.RequestChannel = *examples.Config.RequestChannel
+	// options.RequestStream = int32(*examples.Config.RequestStream)
+	// options.ResponseChannel = *examples.Config.ResponseChannel
+	// options.ResponseStream = int32(*examples.Config.ResponseStream)
 
-	arch, err := archive.NewArchive(options, ctx)
-	if err != nil {
-		fmt.Println("Failed to connect to media driver: " + err.Error())
-	}
-	defer arch.Close()
+	// arch, err := archive.NewArchive(options, ctx)
+	// if err != nil {
+	// 	fmt.Println("Failed to connect to media driver: " + err.Error())
+	// }
+	// defer arch.Close()
 
-	channel := *examples.Config.SampleChannel
-	stream := int32(*examples.Config.SampleStream)
+	// channel := *examples.Config.SampleChannel
+	// stream := int32(*examples.Config.SampleStream)
 
-	if _, err := arch.StartRecording(channel, stream, false, true); err != nil {
-		fmt.Println("StartRecording failed: " + err.Error())
-		os.Exit(1)
-	}
+	// if _, err := arch.StartRecording(channel, stream, false, true); err != nil {
+	// 	fmt.Println("StartRecording failed: " + err.Error())
+	// 	os.Exit(1)
+	// }
 
-	publication := <-arch.AddPublication(channel, stream)
-	fmt.Printf("Publication found %v", publication)
-	defer publication.Close()
+	// publication := <-arch.AddPublication(channel, stream)
+	// fmt.Printf("Publication found %v", publication)
+	// defer publication.Close()
 
-	idler := idlestrategy.Sleeping{SleepFor: time.Millisecond * 1000}
-	idler.Idle(0)
+	// idler := idlestrategy.Sleeping{SleepFor: time.Millisecond * 1000}
+	// idler.Idle(0)
 
-	listener.arch = arch
-	listener.archPub = publication
+	// listener.arch = arch
+	// listener.archPub = publication
 
 	sendBuf := atomic.MakeBuffer(make([]byte, 250))
 	padding := atomic.MakeBuffer(make([]byte, 200))
