@@ -18,8 +18,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"math"
-	"time"
 
 	"github.com/corymonroe-coinbase/aeron-go/aeron"
 	"github.com/corymonroe-coinbase/aeron-go/aeron/atomic"
@@ -28,6 +26,8 @@ import (
 	"github.com/corymonroe-coinbase/aeron-go/aeron/logging"
 	"github.com/corymonroe-coinbase/aeron-go/archive"
 	"github.com/corymonroe-coinbase/aeron-go/archive/examples"
+	"math"
+	"time"
 )
 
 var logID = "basic_recording_subscriber"
