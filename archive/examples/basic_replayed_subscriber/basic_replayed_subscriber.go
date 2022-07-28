@@ -97,9 +97,8 @@ func main() {
 
 	counter := 0
 	printHandler := func(buffer *atomic.Buffer, offset int32, length int32, header *logbuffer.Header) {
-		msgNo := buffer.GetInt32(offset)
-		sendTime := buffer.GetInt64(offset + 4)
-		fmt.Printf("msgNo:%d  sendTime: %d\n", msgNo, sendTime)
+		bytes := buffer.GetBytesArray(offset, length)
+		logger.Noticef("%s\n", bytes)
 		counter++
 	}
 
