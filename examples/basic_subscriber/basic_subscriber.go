@@ -42,12 +42,6 @@ func main() {
 		logging.SetLevel(logging.INFO, "logbuffers")
 		logging.SetLevel(logging.INFO, "buffer")
 	}
-	// files, err := ioutil.ReadFile("/tmp/aeron-go-poc/cluster/recording.log")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(string(files))
 
 	to := time.Duration(time.Millisecond.Nanoseconds() * 10000)
 	ctx := aeron.NewContext().AeronDir(aeron.DefaultAeronDir + "/aeron-" + aeron.UserName).MediaDriverTimeout(to)
