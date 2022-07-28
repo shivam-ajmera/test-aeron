@@ -18,6 +18,7 @@ package main
 import (
 	"flag"
 	"fmt"
+
 	"github.com/corymonroe-coinbase/aeron-go/aeron"
 	"github.com/corymonroe-coinbase/aeron-go/aeron/atomic"
 	"github.com/corymonroe-coinbase/aeron-go/aeron/idlestrategy"
